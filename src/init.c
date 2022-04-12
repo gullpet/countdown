@@ -245,6 +245,7 @@ static void init_local_masters()
 	// Find local master and local communicators
 	for(i = 0; i < world_size; i++)
 	{
+		// For each node, the process with the lowest global rank among the local processes is elected local master
 		if(strncmp(hostname, global_hostname[i], STRING_SIZE) == 0)
 		{
 			local_master = i;
@@ -260,6 +261,7 @@ static void init_local_masters()
 	PMPI_Comm_rank(cntd->comm_local, &local_rank);
 
 	// Init shared memory
+	// Local ranks (running on the same node) utilize shared memory
 	get_rand_postfix(postfix, STRING_SIZE);
 	snprintf(shmem_name, sizeof(shmem_name), SHM_FILE, local_rank, postfix);
 	cntd->local_ranks[local_rank] = create_shmem_rank(shmem_name, 1);
@@ -394,7 +396,8 @@ HIDDEN void stop_cntd()
 // This is a prolog function for every intercepted MPI call
 HIDDEN void call_start(MPI_Type_t mpi_type, MPI_Comm comm, int addr)
 {
-	cntd->into_mpi = TRUE;
+	// "rank" points to the same structure pointed by local_ranks[local_rank]
+	cntd->rank->into_mpi = TRUE;
 
 	if(cntd->enable_cntd)
 		eam_start_mpi();
@@ -416,5 +419,5 @@ HIDDEN void call_end(MPI_Type_t mpi_type, MPI_Comm comm, int addr)
 	
 	event_sample_end(mpi_type, eam_flag);
 
-	cntd->into_mpi = FALSE;
+	cntd->rank->into_mpi = FALSE;
 }

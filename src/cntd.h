@@ -415,6 +415,8 @@ typedef struct
 
 	int exe_is_started;
 
+	unsigned int into_mpi:1;
+
 	uint64_t num_sampling;
 
 	double exe_time[2];
@@ -488,7 +490,8 @@ typedef struct
 	MPI_Comm comm_local_masters;
 	int local_rank_size;
 
-	unsigned int into_mpi:1;
+	// Moved into the CNTD_RankInfo_t structure in order to check the status of every local process
+	// unsigned int into_mpi:1;
 
 	// Runtime values
 	timer_t timer;

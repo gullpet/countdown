@@ -309,6 +309,7 @@ static void read_energy(double *energy_sys, double energy_pkg[MAX_NUM_SOCKETS], 
 #endif
 }
 
+// The sampling is only executed by each local master
 HIDDEN void time_sample(int sig, siginfo_t *siginfo, void *context)
 {
 	int i, j;
@@ -418,7 +419,9 @@ HIDDEN void time_sample(int sig, siginfo_t *siginfo, void *context)
 		{
 			time_region[i][APP][curr] = cntd->local_ranks[i]->app_time[TOT];
 			time_region[i][MPI][curr] = cntd->local_ranks[i]->mpi_time[TOT];
-			if(cntd->into_mpi)
+			
+			// The local master iterates over local ranks and checks if each process is in the middle of an MPI call
+			if(cntd->local_ranks[i]->into_mpi)
 			{
 				if(time_region[i][MPI][curr] < time_region[i][MPI][prev])
 				{
@@ -552,6 +555,7 @@ HIDDEN void time_sample(int sig, siginfo_t *siginfo, void *context)
 
 HIDDEN void init_time_sample()
 {
+	// Sampling is only performed by the local master (having local_rank == 0)
 	if(cntd->rank->local_rank == 0)
 	{
 		if(cntd->enable_power_monitor)
