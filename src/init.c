@@ -168,6 +168,13 @@ static void read_env()
 				cntd->perf_fd[i][j] = 0;
 	}
 
+	// Enable HDF5 report (reverse logic)
+	char *cntd_disable_hdf5 = getenv("CNTD_DISABLE_HDF5");
+	if(str_to_bool(cntd_disable_hdf5))
+		cntd->enable_hdf5 = FALSE;
+	else
+		cntd->enable_hdf5 = TRUE;
+
 	// Output directory
 	char *output_dir = getenv("CNTD_OUTPUT_DIR");
 	if(output_dir != NULL && strcmp(output_dir, "") != 0)

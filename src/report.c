@@ -31,6 +31,8 @@
 #include "cntd.h"
 
 static FILE *timeseries_fd;
+static hid_t timeseries_h5file;
+static hid_t h5status;
 
 static void print_rank_mpi(CNTD_RankInfo_t *rankinfo, uint64_t *mpi_type_cnt)
 {
@@ -790,10 +792,24 @@ HIDDEN void init_timeseries_report()
 	if(cntd->rank->local_rank == 0)
 	{
 		int i, j;
-		char postfix[STRING_SIZE], filename[STRING_SIZE];
-
+		char postfix[STRING_SIZE], filename[STRING_SIZE], tmp_buffer[STRING_SIZE];
+		hid_t dataset, dataspace;
 		get_rand_postfix(postfix, STRING_SIZE);
-		snprintf(filename, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix);
+		if(cntd->enable_hdf5)
+		{
+			snprintf(filename, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix, "h5");
+			timeseries_h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+			if(timeseries_h5file == H5I_INVALID_HID)
+			{
+				fprintf(stderr, "Error: <COUNTDOWN-node:%s-rank:%d> Failed create time-series file '%s'!\n", 
+					cntd->node.hostname, cntd->rank->world_rank, filename);
+				PMPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			}
+
+			dataspace = H5Screate_simple(HDF5_RANK, (hsize_t[]){20}, NULL);
+		}
+
+		snprintf(filename, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix, "csv");
 		timeseries_fd = fopen(filename, "w");
 		if(timeseries_fd == NULL)
 		{
@@ -801,37 +817,76 @@ HIDDEN void init_timeseries_report()
 				cntd->node.hostname, cntd->rank->world_rank, filename);
 			PMPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		}
-
+		
 		// Time sample
 		fprintf(timeseries_fd, "time-sample");
+		if(cntd->enable_hdf5){
+			dataset = H5Dcreate(timeseries_h5file, "time-sample", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+			H5Dclose(dataset);
+		}
 
 		if(cntd->enable_power_monitor)
 		{
 			// Energy
 			for(i = 0; i < cntd->node.num_sockets; i++)
 			{
-				fprintf(timeseries_fd, ";energy-pkg-%d", i);
+				snprintf(tmp_buffer, STRING_SIZE, "energy-pkg-%d", i);
+				fprintf(timeseries_fd, ";%s", tmp_buffer);
+				if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+				}
 #if defined(INTEL) || defined(POWER9)
-				fprintf(timeseries_fd, ";energy-dram-%d", i);
+				snprintf(tmp_buffer, STRING_SIZE, "energy-dram-%d", i);
+				fprintf(timeseries_fd, ";%s", tmp_buffer);
+				if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+				}
 #endif
 #if defined(POWER9) && !defined(NVIDIA_GPU)
-				fprintf(timeseries_fd, ";energy-gpus-pkg-%d", i);
+				snprintf(tmp_buffer, STRING_SIZE, "energy-gpus-pkg-%d", i);
+				fprintf(timeseries_fd, ";%s", tmp_buffer);
+				if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+				}
 #endif
 			}
 #ifdef NVIDIA_GPU
-			for(i = 0; i < cntd->gpu.num_gpus; i++)
-				fprintf(timeseries_fd, ";energy-gpu-%d", i);
+			for(i = 0; i < cntd->gpu.num_gpus; i++){
+				snprintf(tmp_buffer, STRING_SIZE, "energy-gpu-%d", i);
+				fprintf(timeseries_fd, ";%s", tmp_buffer);
+				if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+				}
+			}
 #endif
 #ifdef POWER9
 			fprintf(timeseries_fd, ";energy-sys");
+			if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, "energy-sys", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+			}
 #endif
 
 			// Power
 			for(i = 0; i < cntd->node.num_sockets; i++)
 			{
-				fprintf(timeseries_fd, ";power-pkg-%d", i);
+				snprintf(tmp_buffer, STRING_SIZE, "power-pkg-%d", i);
+				fprintf(timeseries_fd, ";%s", tmp_buffer);
+				if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+				}
 #if defined(INTEL) || defined(POWER9)
-				fprintf(timeseries_fd, ";power-dram-%d", i);
+				snprintf(tmp_buffer, STRING_SIZE, "power-dram-%d", i);
+				fprintf(timeseries_fd, ";%s", tmp_buffer);
+				if(cntd->enable_hdf5){
+					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+					H5Dclose(dataset);
+				}
 #endif
 #if defined(POWER9) && !defined(NVIDIA_GPU)
 				fprintf(timeseries_fd, ";power-gpus-pkg-%d", i);
@@ -864,16 +919,34 @@ HIDDEN void init_timeseries_report()
 
 		// MPI file write and read
 		fprintf(timeseries_fd, ";mpi_file_write;mpi_file_read");
+		if(cntd->enable_hdf5){
+			dataset = H5Dcreate(timeseries_h5file, "mpi_file_write", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+			H5Dclose(dataset);
+			dataset = H5Dcreate(timeseries_h5file, "mpi_file_read", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+			H5Dclose(dataset);
+		}
 
 		// Application time
-		for(i = 0; i < cntd->local_rank_size; i++)
-			fprintf(timeseries_fd, ";rank-%d-cpu-%d-app_time", 
+		for(i = 0; i < cntd->local_rank_size; i++){
+			snprintf(tmp_buffer, STRING_SIZE, "rank-%d-cpu-%d-app_time", 
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-
+			fprintf(timeseries_fd, ";%s", tmp_buffer);
+			if(cntd->enable_hdf5){
+				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+				H5Dclose(dataset);
+			}
+		}
+		
 		// MPI time
-		for(i = 0; i < cntd->local_rank_size; i++)
-			fprintf(timeseries_fd, ";rank-%d-cpu-%d-mpi_time", 
+		for(i = 0; i < cntd->local_rank_size; i++){
+			snprintf(tmp_buffer, STRING_SIZE, "rank-%d-cpu-%d-mpi_time", 
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			fprintf(timeseries_fd, ";%s", tmp_buffer);
+			if(cntd->enable_hdf5){
+				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+				H5Dclose(dataset);
+			}
+		}
 
 		// MPI network send
 		for(i = 0; i < cntd->local_rank_size; i++)
@@ -906,12 +979,24 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 
 		// Linux perf
-		for(j = 0; j < MAX_NUM_CUSTOM_PERF; j++)
-			for(i = 0; i < cntd->local_rank_size; i++)
-				if(cntd->perf_fd[i][j] > 0)
-					fprintf(timeseries_fd, ";rank-%d-cpu-%d-perf-event-%d", 
+		for(j = 0; j < MAX_NUM_CUSTOM_PERF; j++){
+			for(i = 0; i < cntd->local_rank_size; i++){
+				if(cntd->perf_fd[i][j] > 0){
+					snprintf(tmp_buffer, STRING_SIZE, "rank-%d-cpu-%d-perf-event-%d", 
 						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id, j);
+					fprintf(timeseries_fd, ";%s", tmp_buffer);
+					if(cntd->enable_hdf5){
+						dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+						H5Dclose(dataset);
+					}
+				}
+			}
+		}
 
+		if(cntd->enable_hdf5){
+			H5Sclose(dataspace);
+		}
+		
 		// End line
 		fprintf(timeseries_fd, "\n");
 	}
@@ -922,15 +1007,25 @@ HIDDEN void finalize_timeseries_report()
 	if(cntd->rank->local_rank == 0)
 	{
 		char oldname[STRING_SIZE], newname[STRING_SIZE], postfix[STRING_SIZE];
+		int rc, rc2;
 
 		fclose(timeseries_fd);
 
 		get_rand_postfix(postfix, STRING_SIZE);
-		snprintf(oldname, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix);
-		snprintf(newname, STRING_SIZE, TIME_SERIES_FILE, cntd->log_dir, cntd->node.hostname);
+		if(cntd->enable_hdf5)
+		{
+			H5Fclose(timeseries_h5file);
+			
+			snprintf(oldname, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix, "h5");
+			snprintf(newname, STRING_SIZE, TIME_SERIES_FILE, cntd->log_dir, cntd->node.hostname, "h5");
+			rc = copyFile(oldname, newname);
+			rc2 = remove(oldname);
+		}
+		snprintf(oldname, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix, "csv");
+		snprintf(newname, STRING_SIZE, TIME_SERIES_FILE, cntd->log_dir, cntd->node.hostname, "csv");
 
-		int rc = copyFile(oldname, newname);
-		int rc2 = remove(oldname);
+		rc = copyFile(oldname, newname);
+		rc2 = remove(oldname);
 	}
 }
 

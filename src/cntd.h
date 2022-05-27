@@ -57,6 +57,9 @@
 // hwloc
 #include <hwloc.h>
 
+// HDF5
+#include <hdf5.h>
+
 // NVML
 #ifdef NVIDIA_GPU
 #include <nvml.h>
@@ -102,12 +105,15 @@
 #define RANK_MPI_REPORT_FILE			"cntd_rank_mpi.csv"
 #define EAM_REPORT_FILE					"cntd_eam.csv"
 #define EAM_SLACK_REPORT_FILE			"cntd_eam_slack.csv"
-#define TMP_TIME_SERIES_FILE			"%s/cntd_%s.%s.csv"
-#define TIME_SERIES_FILE				"%s/cntd_%s.csv"
+#define TMP_TIME_SERIES_FILE			"%s/cntd_%s.%s.%s"
+#define TIME_SERIES_FILE				"%s/cntd_%s.%s"
 #define SHM_FILE						"/cntd_local_rank_%d.%s"
 
 // Hide symbols for external linking
 #define HIDDEN  __attribute__((visibility("hidden")))
+
+// HDF5 constants
+#define HDF5_RANK						1
 
 // Constants
 #define CNTD_MPI_TAG 					666
@@ -490,6 +496,7 @@ typedef struct
 	unsigned int enable_timeseries_report:1;
 	unsigned int enable_report:1;
 	unsigned int enable_perf:1;
+	unsigned int enable_hdf5:1;
 
 	MPI_Comm comm_local;
 	MPI_Comm comm_local_masters;
