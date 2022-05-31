@@ -153,6 +153,12 @@ find_package(MPI REQUIRED C)
 # HDF5
 ###########################################################
 find_package(HDF5)
+if(HDF5_FOUND)
+	include_directories(${HDF5_C_INCLUDE_DIRS})
+	link_libraries(${HDF5_C_LIBRARIES})
+    add_definitions(-DHDF5_FOUND)
+endif()
+
 
 ###########################################################
 # HWLOC

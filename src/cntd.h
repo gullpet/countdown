@@ -58,7 +58,9 @@
 #include <hwloc.h>
 
 // HDF5
+#ifdef HDF5_FOUND
 #include <hdf5.h>
+#endif
 
 // NVML
 #ifdef NVIDIA_GPU
@@ -487,6 +489,7 @@ typedef struct
 	double sampling_time;
 	char log_dir[STRING_SIZE];
 	char tmp_dir[STRING_SIZE];
+	char *perf_custom_names[MAX_NUM_CUSTOM_PERF];
 
 	unsigned int force_msr:1;
 	unsigned int enable_cntd:1;
@@ -496,8 +499,9 @@ typedef struct
 	unsigned int enable_timeseries_report:1;
 	unsigned int enable_report:1;
 	unsigned int enable_perf:1;
+#ifdef HDF5_FOUND
 	unsigned int enable_hdf5:1;
-
+#endif
 	MPI_Comm comm_local;
 	MPI_Comm comm_local_masters;
 	int local_rank_size;

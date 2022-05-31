@@ -166,14 +166,20 @@ static void read_env()
 		else
 			for(i = 0; i < cntd->local_rank_size; i++)
 				cntd->perf_fd[i][j] = 0;
+		
+		// Custom perf names
+		snprintf(perf_env, sizeof(perf_env), "CNTD_PERF_NAME_%d", j);
+		cntd->perf_custom_names[j] = getenv(perf_env);
 	}
 
+#ifdef HDF5_FOUND
 	// Enable HDF5 report (reverse logic)
 	char *cntd_disable_hdf5 = getenv("CNTD_DISABLE_HDF5");
 	if(str_to_bool(cntd_disable_hdf5))
 		cntd->enable_hdf5 = FALSE;
 	else
 		cntd->enable_hdf5 = TRUE;
+#endif
 
 	// Output directory
 	char *output_dir = getenv("CNTD_OUTPUT_DIR");
