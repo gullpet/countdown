@@ -578,3 +578,34 @@ HIDDEN int read_intel_nom_freq()
     return (int) (nom_freq * 1000);
 }
 #endif
+
+#ifdef HDF5_FOUND
+/* Writes ONE element at the given index to the dataset specified by dset_name.
+    Automatically resizes the dataset when index appears to be out of bound. */
+HIDDEN void append_to_h5(hid_t file, const char *dset_name, hid_t type_id, unsigned int index, void *data){
+    hid_t dataset, dataspace, filespace;
+    dataset = H5Dopen(file, dset_name, H5P_DEFAULT);
+	filespace = H5Dget_space(dataset);
+    dataspace = H5Screate_simple(HDF5_RANK, (hsize_t[]){1}, NULL);
+
+    hsize_t dims[1];
+    H5Sget_simple_extent_dims(filespace, dims, NULL);
+    if(index == dims[0] - 1){
+        // Extend dataset by doubling its current size
+        dims[0] *= 2;
+        H5Dextend(dataset, dims);
+    }
+    
+    H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){index}, NULL, (hsize_t[]){1}, NULL);
+	H5Dwrite(dataset, type_id, dataspace, filespace, H5P_DEFAULT, data);
+
+    H5Sclose(dataspace);
+    H5Sclose(filespace);
+	H5Dclose(dataset);
+}
+
+HIDDEN void create_dataset(hid_t file, const char *dset_name, hid_t type_id, hid_t dataspace, hid_t cparams){
+    hid_t dataset = H5Dcreate(file, dset_name, type_id, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
+	H5Dclose(dataset);
+}
+#endif

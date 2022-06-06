@@ -116,6 +116,7 @@
 
 // HDF5 constants
 #define HDF5_RANK						1
+#define HDF5_DATASET_SIZE				64
 
 // Constants
 #define CNTD_MPI_TAG 					666
@@ -658,6 +659,10 @@ void add_file(MPI_Type_t type,
 void get_rand_postfix(char *postfix, int size);
 #ifdef INTEL
 int read_intel_nom_freq();
+#endif
+#ifdef HDF5_FOUND
+void append_to_h5(hid_t file, const char *dset_name, hid_t type_id, unsigned int index, void *data);
+void create_dataset(hid_t file, const char *dset_name, hid_t type_id, hid_t dataspace, hid_t cparams);
 #endif
 
 #endif // __CNTD_H__

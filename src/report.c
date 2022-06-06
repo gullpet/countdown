@@ -798,7 +798,7 @@ HIDDEN void init_timeseries_report()
 		char postfix[STRING_SIZE], filename[STRING_SIZE], tmp_buffer[STRING_SIZE];
 		get_rand_postfix(postfix, STRING_SIZE);
 #ifdef HDF5_FOUND
-		hid_t dataset, dataspace, cparams;
+		hid_t dataspace, cparams;
 		if(cntd->enable_hdf5)
 		{
 			snprintf(filename, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix, "h5");
@@ -809,7 +809,7 @@ HIDDEN void init_timeseries_report()
 					cntd->node.hostname, cntd->rank->world_rank, filename);
 				PMPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			}
-			dataspace = H5Screate_simple(HDF5_RANK, (hsize_t[]){20}, (hsize_t[]){H5S_UNLIMITED});
+			dataspace = H5Screate_simple(HDF5_RANK, (hsize_t[]){HDF5_DATASET_SIZE}, (hsize_t[]){H5S_UNLIMITED});
 			cparams = H5Pcreate(H5P_DATASET_CREATE);
 			h5status = H5Pset_chunk(cparams, HDF5_RANK, (hsize_t[]){1});
 		}
@@ -826,10 +826,8 @@ HIDDEN void init_timeseries_report()
 		// Time sample
 		fprintf(timeseries_fd, "time-sample");
 #ifdef HDF5_FOUND
-		if(cntd->enable_hdf5){
-			dataset = H5Dcreate(timeseries_h5file, "time-sample", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-			H5Dclose(dataset);
-		}
+		if(cntd->enable_hdf5)
+			create_dataset(timeseries_h5file, "time-sample", H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 		if(cntd->enable_power_monitor)
 		{
@@ -839,29 +837,23 @@ HIDDEN void init_timeseries_report()
 				snprintf(tmp_buffer, STRING_SIZE, "energy-pkg-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #if defined(INTEL) || defined(POWER9)
 				snprintf(tmp_buffer, STRING_SIZE, "energy-dram-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #endif
 #if defined(POWER9) && !defined(NVIDIA_GPU)
 				snprintf(tmp_buffer, STRING_SIZE, "energy-gpus-pkg-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #endif
 			}
@@ -870,20 +862,16 @@ HIDDEN void init_timeseries_report()
 				snprintf(tmp_buffer, STRING_SIZE, "energy-gpu-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 			}
 #endif
 #endif
 #ifdef POWER9
 			fprintf(timeseries_fd, ";energy-sys");
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, "energy-sys", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #endif
 
@@ -893,29 +881,23 @@ HIDDEN void init_timeseries_report()
 				snprintf(tmp_buffer, STRING_SIZE, "power-pkg-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #if defined(INTEL) || defined(POWER9)
 				snprintf(tmp_buffer, STRING_SIZE, "power-dram-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #endif
 #if defined(POWER9) && !defined(NVIDIA_GPU)
 				snprintf(tmp_buffer, STRING_SIZE, "power-gpus-pkg-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #endif
 		}
@@ -924,20 +906,16 @@ HIDDEN void init_timeseries_report()
 				snprintf(tmp_buffer, STRING_SIZE, "power-gpu-%d", i);
 				fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 			}
 #endif
 #ifdef POWER9
 			fprintf(timeseries_fd, ";power-sys");
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, "power-sys", H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 #endif
 		}
@@ -949,10 +927,8 @@ HIDDEN void init_timeseries_report()
 			snprintf(tmp_buffer, STRING_SIZE, "util-gpu-%d", i);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, cparams);
 #endif
 		}
 		// GPU memory utilization
@@ -960,10 +936,8 @@ HIDDEN void init_timeseries_report()
 			snprintf(tmp_buffer, STRING_SIZE, "util-mem-gpu-%d", i);	
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, cparams);
 #endif
 		}
 		// GPU temperature
@@ -971,10 +945,8 @@ HIDDEN void init_timeseries_report()
 			snprintf(tmp_buffer, STRING_SIZE, "temp-gpu-%d", i);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, cparams);
 #endif
 		}
 		// GPU temperature
@@ -982,10 +954,8 @@ HIDDEN void init_timeseries_report()
 			snprintf(tmp_buffer, STRING_SIZE, "clock-gpu-%d", i);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-				if(cntd->enable_hdf5){
-					dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-					H5Dclose(dataset);
-				}
+				if(cntd->enable_hdf5)
+					create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_UINT, dataspace, cparams);
 #endif
 		}
 #endif
@@ -994,10 +964,8 @@ HIDDEN void init_timeseries_report()
 		fprintf(timeseries_fd, ";mpi_file_write;mpi_file_read");
 #ifdef HDF5_FOUND
 		if(cntd->enable_hdf5){
-			dataset = H5Dcreate(timeseries_h5file, "mpi_file_write", H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-			H5Dclose(dataset);
-			dataset = H5Dcreate(timeseries_h5file, "mpi_file_read", H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-			H5Dclose(dataset);
+			create_dataset(timeseries_h5file, "mpi_file_write", H5T_NATIVE_ULONG, dataspace, cparams);
+			create_dataset(timeseries_h5file, "mpi_file_read", H5T_NATIVE_ULONG, dataspace, cparams);
 		}
 #endif
 
@@ -1007,10 +975,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_DOUBLE, dataspace, cparams);
 #endif
 		}
 		
@@ -1020,10 +986,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_DOUBLE, dataspace, cparams);
 #endif
 		}
 
@@ -1033,10 +997,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, cparams);
 #endif
 		}
 
@@ -1046,10 +1008,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, cparams);
 #endif
 		}
 
@@ -1059,10 +1019,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 		}
 
@@ -1072,10 +1030,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_FLOAT, dataspace, cparams);
 #endif
 		}
 
@@ -1085,10 +1041,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, cparams);
 #endif
 		}
 
@@ -1098,10 +1052,8 @@ HIDDEN void init_timeseries_report()
 				cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
 			fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-			if(cntd->enable_hdf5){
-				dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-				H5Dclose(dataset);
-			}
+			if(cntd->enable_hdf5)
+				create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, cparams);
 #endif
 		}
 
@@ -1118,10 +1070,8 @@ HIDDEN void init_timeseries_report()
 					
 					fprintf(timeseries_fd, ";%s", tmp_buffer);
 #ifdef HDF5_FOUND
-					if(cntd->enable_hdf5){
-						dataset = H5Dcreate(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, H5P_DEFAULT, cparams, H5P_DEFAULT);
-						H5Dclose(dataset);
-					}
+					if(cntd->enable_hdf5)
+						create_dataset(timeseries_h5file, tmp_buffer, H5T_NATIVE_ULONG, dataspace, cparams);
 #endif
 				}
 			}
@@ -1149,7 +1099,6 @@ HIDDEN void finalize_timeseries_report()
 #ifdef HDF5_FOUND
 		if(cntd->enable_hdf5)
 		{
-			//H5Sclose(dataspace);
 			H5Fclose(timeseries_h5file);
 			
 			snprintf(oldname, STRING_SIZE, TMP_TIME_SERIES_FILE, cntd->tmp_dir, cntd->node.hostname, postfix, "h5");
@@ -1223,29 +1172,19 @@ HIDDEN void print_timeseries_report(
 	int i, j;
 	double sample_duration = time_curr - time_prev;
 #ifdef HDF5_FOUND
-	hid_t dataset, dataspace, filespace;
 	char dset_name[STRING_SIZE];
-	dataspace = H5Screate_simple(HDF5_RANK, (hsize_t[]){1}, NULL);
-	// static int variable to keep track of the samples already performed and use it as an index to access datasets
+	// Index for datasets
 	static unsigned int num_samples = 0;
 #endif
-	//TODO add all writes to datasets, resize dataset once it gets out of bound
 
 	// Time sample
 	fprintf(timeseries_fd, "%.3f", 
 		time_curr - cntd->rank->exe_time[START]);
 #ifdef HDF5_FOUND
-	snprintf(dset_name, STRING_SIZE, "time-sample");
-	dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-	filespace = H5Dget_space(dataset);
-	h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-	h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-				(float[]){time_curr - cntd->rank->exe_time[START]});
-
-	H5Dclose(dataset);
-	H5Sclose(filespace);
+	if(cntd->enable_hdf5)
+		append_to_h5(timeseries_h5file, "time-sample", H5T_NATIVE_FLOAT, num_samples, (float[]){time_curr - cntd->rank->exe_time[START]});
 #endif
-
+	hid_t roba = H5I_INVALID_HID;
 	if(cntd->enable_power_monitor)
 	{
 		// Energy
@@ -1255,45 +1194,30 @@ HIDDEN void print_timeseries_report(
 			fprintf(timeseries_fd, ";%.2f", 
 				energy_pkg[i]);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "energy-pkg-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_pkg[i]});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "energy-pkg-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_pkg[i]});
+			}
 #endif
 #endif
 #if defined(INTEL) || defined(POWER9)
 			fprintf(timeseries_fd, ";%.2f", 
 				energy_dram[i]);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "energy-dram-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_dram[i]});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "energy-dram-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_dram[i]});
+			}
 #endif
 #endif
 #if defined(POWER9) && !defined(NVIDIA_GPU)
 			fprintf(timeseries_fd, ";%.2f", 
 				energy_gpu_sys[i]);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "energy-gpus-pkg-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_gpu_sys[i]});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "energy-gpus-pkg-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_gpu_sys[i]});
+			}
 #endif
 #endif		
 		}
@@ -1301,30 +1225,20 @@ HIDDEN void print_timeseries_report(
 		for(i = 0; i < cntd->gpu.num_gpus; i++){
 			fprintf(timeseries_fd, ";%.2f", energy_gpu[i]);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "energy-gpu-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_gpu[i]});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "energy-gpu-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_gpu[i]});
+			}
 #endif
 		}
 #endif
 #ifdef POWER9
 		fprintf(timeseries_fd, ";%.2f", energy_sys);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "energy-sys", i);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-					(float[]){energy_sys});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "energy-sys", i);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_sys});
+		}
 #endif
 #endif
 
@@ -1335,45 +1249,30 @@ HIDDEN void print_timeseries_report(
 			fprintf(timeseries_fd, ";%.2f", 
 				energy_pkg[i] / sample_duration);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "power-pkg-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_pkg[i] / sample_duration});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "power-pkg-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_pkg[i] / sample_duration});
+			}
 #endif
 #endif
 #if defined(INTEL) || defined(POWER9)
 			fprintf(timeseries_fd, ";%.2f", 
 				energy_dram[i] / sample_duration);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "power-dram-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_dram[i] / sample_duration});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "power-dram-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_dram[i] / sample_duration});
+			}
 #endif
 #endif
 #if defined(POWER9) && !defined(NVIDIA_GPU)
 			fprintf(timeseries_fd, ";%.2f", 
 				energy_gpu_sys[i] / sample_duration);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "power-gpus-pkg-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_gpu_sys[i] / sample_duration});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "power-gpus-pkg-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_gpu_sys[i] / sample_duration});
+			}
 #endif
 #endif		
 		}
@@ -1382,15 +1281,10 @@ HIDDEN void print_timeseries_report(
 			fprintf(timeseries_fd, ";%.2f",
 				energy_gpu[i] / sample_duration);
 #ifdef HDF5_FOUND
-			snprintf(dset_name, STRING_SIZE, "power-gpu-%d", i);
-			dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-			filespace = H5Dget_space(dataset);
-			h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-			h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-						(float[]){energy_gpu[i] / sample_duration});
-
-			H5Dclose(dataset);
-			H5Sclose(filespace);
+			if(cntd->enable_hdf5){
+				snprintf(dset_name, STRING_SIZE, "power-gpu-%d", i);
+				append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_gpu[i] / sample_duration});
+			}
 #endif
 		}
 #endif
@@ -1398,15 +1292,10 @@ HIDDEN void print_timeseries_report(
 		fprintf(timeseries_fd, ";%.2f", 
 			energy_sys / sample_duration);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "power-sys", i);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-					(float[]){energy_sys / sample_duration});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "power-sys", i);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){energy_sys / sample_duration});
+		}
 #endif
 #endif
 	}
@@ -1417,60 +1306,40 @@ HIDDEN void print_timeseries_report(
 	for(i = 0; i < cntd->gpu.num_gpus; i++){
 		fprintf(timeseries_fd, ";%u", util_gpu[i]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "util-gpu-%d", i);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_UINT, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned[]){util_gpu[i]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "util-gpu-%d", i);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_UINT, num_samples, (unsigned[]){util_gpu[i]});
+		}
 #endif
 	}
 	// GPU memory utilization
 	for(i = 0; i < cntd->gpu.num_gpus; i++){
 		fprintf(timeseries_fd, ";%u", util_mem_gpu[i]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "util-mem-gpu-%d", i);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_UINT, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned[]){util_mem_gpu[i]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "util-mem-gpu-%d", i);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_UINT, num_samples, (unsigned[]){util_mem_gpu[i]});
+		}
 #endif
 	}
 	// GPU temperature
 	for(i = 0; i < cntd->gpu.num_gpus; i++){
 		fprintf(timeseries_fd, ";%u", temp[i]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "temp-gpu-%d", i);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_UINT, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned[]){temp[i]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "temp-gpu-%d", i);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_UINT, num_samples, (unsigned[]){temp[i]});
+		}
 #endif
 	}
 	// Clock temperature
 	for(i = 0; i < cntd->gpu.num_gpus; i++){
 		fprintf(timeseries_fd, ";%u", clock[i]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "clock-gpu-%d", i);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_UINT, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned[]){clock[i]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "clock-gpu-%d", i);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_UINT, num_samples, (unsigned[]){clock[i]});
+		}
 #endif
 	}
 #endif
@@ -1482,28 +1351,17 @@ HIDDEN void print_timeseries_report(
 		mpi_file[READ] += cntd->local_ranks[i]->mpi_file_data[READ][CURR];
 		mpi_file[WRITE] += cntd->local_ranks[i]->mpi_file_data[WRITE][CURR];
 	}
+
 	// (?) Should be WRITE first and READ second, according to the order in which csv columns were initialized
 	fprintf(timeseries_fd, ";%lu;%lu", mpi_file[READ], mpi_file[WRITE]);
 #ifdef HDF5_FOUND
-	snprintf(dset_name, STRING_SIZE, "mpi_file_write", i);
-	dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-	filespace = H5Dget_space(dataset);
-	h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-	h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-				(unsigned long[]){mpi_file[WRITE]});
+	if(cntd->enable_hdf5){
+		snprintf(dset_name, STRING_SIZE, "mpi_file_write");
+		append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){mpi_file[WRITE]});
 
-	H5Dclose(dataset);
-	H5Sclose(filespace);
-
-	snprintf(dset_name, STRING_SIZE, "mpi_file_read", i);
-	dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-	filespace = H5Dget_space(dataset);
-	h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-	h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-				(unsigned long[]){mpi_file[READ]});
-
-	H5Dclose(dataset);
-	H5Sclose(filespace);
+		snprintf(dset_name, STRING_SIZE, "mpi_file_read");
+		append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){mpi_file[READ]});
+	}
 #endif
 
 	// Application time
@@ -1515,16 +1373,11 @@ HIDDEN void print_timeseries_report(
 							  cntd->local_ranks[i]->app_time[CURR]);
 #endif
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-app_time", 
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-app_time",
 					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_DOUBLE, dataspace, filespace, H5P_DEFAULT, 
-					(double[]){cntd->local_ranks[i]->app_time[CURR]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_DOUBLE, num_samples, (double[]){cntd->local_ranks[i]->app_time[CURR]});
+		}
 #endif
 	}
 
@@ -1537,16 +1390,11 @@ HIDDEN void print_timeseries_report(
 							  cntd->local_ranks[i]->mpi_time[CURR]);
 #endif
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-mpi_time", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_DOUBLE, dataspace, filespace, H5P_DEFAULT, 
-					(double[]){cntd->local_ranks[i]->mpi_time[CURR]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-mpi_time", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_DOUBLE, num_samples, (double[]){cntd->local_ranks[i]->mpi_time[CURR]});
+		}
 #endif
 	}
 
@@ -1554,32 +1402,22 @@ HIDDEN void print_timeseries_report(
 	for(i = 0; i < cntd->local_rank_size; i++){
 		fprintf(timeseries_fd, ";%lu", cntd->local_ranks[i]->mpi_net_data[SEND][CURR]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-mpi_net_send", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned long[]){cntd->local_ranks[i]->mpi_net_data[SEND][CURR]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-mpi_net_send", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){cntd->local_ranks[i]->mpi_net_data[SEND][CURR]});
+		}
 #endif
 	}
 	// MPI network recv
 	for(i = 0; i < cntd->local_rank_size; i++){
 		fprintf(timeseries_fd, ";%lu", cntd->local_ranks[i]->mpi_net_data[RECV][CURR]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-mpi_net_recv", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned long[]){cntd->local_ranks[i]->mpi_net_data[RECV][CURR]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-mpi_net_recv", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){cntd->local_ranks[i]->mpi_net_data[RECV][CURR]});
+		}
 #endif
 	}
 	// Average Frequency
@@ -1599,35 +1437,26 @@ HIDDEN void print_timeseries_report(
 		fprintf(timeseries_fd, ";%.0f", curr_freq);
 #endif
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-freq", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-					(float[]){curr_freq});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-freq", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){curr_freq});
+		}
 #endif
 	}
 
 	// Average IPC
+	double ipc;
 	for(i = 0; i < cntd->local_rank_size; i++)
 	{
-		fprintf(timeseries_fd, ";%.3f", 
-			cntd->local_ranks[i]->perf[PERF_CYCLES][CURR] > 0 ? (double) cntd->local_ranks[i]->perf[PERF_INST_RET][CURR] / (double) cntd->local_ranks[i]->perf[PERF_CYCLES][CURR] : 0);
+		ipc = cntd->local_ranks[i]->perf[PERF_CYCLES][CURR] > 0 ? (double) cntd->local_ranks[i]->perf[PERF_INST_RET][CURR] / (double) cntd->local_ranks[i]->perf[PERF_CYCLES][CURR] : 0;
+		fprintf(timeseries_fd, ";%.3f", ipc);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-ipc", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, dataspace, filespace, H5P_DEFAULT, 
-					(float[]){cntd->local_ranks[i]->perf[PERF_CYCLES][CURR] > 0 ? (double) cntd->local_ranks[i]->perf[PERF_INST_RET][CURR] / (double) cntd->local_ranks[i]->perf[PERF_CYCLES][CURR] : 0});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-ipc", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_FLOAT, num_samples, (float[]){ipc});
+		}
 #endif		
 	}
 
@@ -1635,16 +1464,11 @@ HIDDEN void print_timeseries_report(
 	for(i = 0; i < cntd->local_rank_size; i++){
 		fprintf(timeseries_fd, ";%lu", cntd->local_ranks[i]->perf[PERF_CYCLES][CURR]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-cycles", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned long[]){cntd->local_ranks[i]->perf[PERF_CYCLES][CURR]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-cycles", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){cntd->local_ranks[i]->perf[PERF_CYCLES][CURR]});
+		}
 #endif
 	}
 	
@@ -1652,16 +1476,11 @@ HIDDEN void print_timeseries_report(
 	for(i = 0; i < cntd->local_rank_size; i++){
 		fprintf(timeseries_fd, ";%lu", cntd->local_ranks[i]->perf[PERF_INST_RET][CURR]);
 #ifdef HDF5_FOUND
-		snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-inst_ret", 
-					cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
-		dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-		filespace = H5Dget_space(dataset);
-		h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-		h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-					(unsigned long[]){cntd->local_ranks[i]->perf[PERF_INST_RET][CURR]});
-
-		H5Dclose(dataset);
-		H5Sclose(filespace);
+		if(cntd->enable_hdf5){
+			snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-inst_ret", 
+						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id);
+			append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){cntd->local_ranks[i]->perf[PERF_INST_RET][CURR]});
+		}
 #endif
 	}
 
@@ -1673,20 +1492,16 @@ HIDDEN void print_timeseries_report(
 			if(cntd->perf_fd[i][j] > 0){
 				fprintf(timeseries_fd, ";%lu", cntd->local_ranks[i]->perf[j][CURR]);
 #ifdef HDF5_FOUND
-				if(cntd->perf_custom_names[j] != NULL)
-					snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-%s", 
-						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id, cntd->perf_custom_names[j]);
-				else
-					snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-perf-event-%d",
-						cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id, j);
-				dataset = H5Dopen(timeseries_h5file, dset_name, H5P_DEFAULT);
-				filespace = H5Dget_space(dataset);
-				h5status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, (hsize_t[]){num_samples}, NULL, (hsize_t[]){1}, NULL);
-				h5status = H5Dwrite(dataset, H5T_NATIVE_ULONG, dataspace, filespace, H5P_DEFAULT, 
-							(unsigned long[]){cntd->local_ranks[i]->perf[j][CURR]});
-
-				H5Dclose(dataset);
-				H5Sclose(filespace);
+				if(cntd->enable_hdf5){
+					if(cntd->perf_custom_names[j] != NULL)
+						snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-%s", 
+							cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id, cntd->perf_custom_names[j]);
+					else
+						snprintf(dset_name, STRING_SIZE, "rank-%d-cpu-%d-perf-event-%d",
+							cntd->local_ranks[i]->world_rank, cntd->local_ranks[i]->cpu_id, j);
+					
+					append_to_h5(timeseries_h5file, dset_name, H5T_NATIVE_ULONG, num_samples, (unsigned long[]){cntd->local_ranks[i]->perf[j][CURR]});
+				}
 #endif
 			}
 		}
@@ -1696,6 +1511,5 @@ HIDDEN void print_timeseries_report(
 
 #ifdef HDF5_FOUND
 	num_samples += 1;
-	H5Sclose(dataspace);
 #endif
 }
