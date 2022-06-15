@@ -71,6 +71,13 @@ option(CNTD_HWP_DISCOVERED "Manual set if hwp-states are available" OFF)
 option(CNTD_USE_CPUFREQ "Manual set if use \"cpufreq\" interface" ON)
 
 ###########################################################
+# PERF Options
+###########################################################
+if(DEFINED ENV{CNTD_MAX_NUM_CUSTOM_PERF})
+	add_compile_definitions(CNTD_MAX_NUM_CUSTOM_PERF=$ENV{CNTD_MAX_NUM_CUSTOM_PERF})
+endif()
+
+###########################################################
 # Build Type
 ###########################################################
 set(default_build_type "RelWithDebInfo")
@@ -138,12 +145,17 @@ endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     file(READ "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" gov_info)
 
+	if(DEFINED ENV{CNTD_GOV})
+		set(gov_info $ENV{CNTD_GOV})
+	endif()
+
 	if(gov_info STREQUAL "userspace")
 		add_compile_definitions(USERSPACE_GOV)
 	endif()
 
 	message(STATUS "Using \"governor\" ${gov_info}")
 endif()
+
 ###########################################################
 # MPI
 ###########################################################
@@ -190,6 +202,17 @@ if(CNTD_ENABLE_MOSQUITTO)
 	link_libraries(${MOSQUITTO_LIBRARY})
 
 	add_definitions(-DMOSQUITTO_ENABLED)
+endif()
+
+###########################################################
+# Get compile  definitions
+###########################################################
+if(DEFINED ENV{CNTD_GET_COMPILE_DEFINITIONS})
+	get_directory_property(DirDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+	foreach(d ${DirDefs})
+		message(STATUS "Found compile definition: " ${d})
+	endforeach()
+	message(STATUS "All compile definitions: " ${DirDefs})
 endif()
 
 ###########################################################
