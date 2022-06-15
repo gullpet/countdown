@@ -590,7 +590,7 @@ HIDDEN void append_to_h5(hid_t file, const char *dset_name, hid_t type_id, unsig
 
     hsize_t dims[1];
     H5Sget_simple_extent_dims(filespace, dims, NULL);
-    if(index == dims[0] - 1){
+    if(index >= dims[0] - 1){
         // Extend dataset by doubling its current size
         dims[0] *= 2;
         H5Dextend(dataset, dims);

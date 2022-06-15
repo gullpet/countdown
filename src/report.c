@@ -1184,7 +1184,6 @@ HIDDEN void print_timeseries_report(
 	if(cntd->enable_hdf5)
 		append_to_h5(timeseries_h5file, "time-sample", H5T_NATIVE_FLOAT, num_samples, (float[]){time_curr - cntd->rank->exe_time[START]});
 #endif
-	hid_t roba = H5I_INVALID_HID;
 	if(cntd->enable_power_monitor)
 	{
 		// Energy
